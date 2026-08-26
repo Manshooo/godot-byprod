@@ -1,0 +1,8 @@
+[submodule "godot-cpp"]
+	path = godot-cpp
+	url = https://github.com/godotengine/godot-cpp.git
+	branch = 4.5
+	# The build drops object files inside the submodule, and the demo project needs
+	# a .gdignore there so Godot's importer does not walk them. Neither is worth
+	# seeing in `git status` every time.
+	ignore = dirty

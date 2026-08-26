@@ -1,0 +1,30 @@
+# Build output
+addons/byprod/bin/
+*.os
+*.obj
+*.o
+*.pdb
+*.ilk
+*.exp
+*.lib
+.sconsign.dblite
+.sconf_temp/
+config.log
+
+# byProd's proprietary runtime and headers are never committed — every developer
+# downloads the SDK from byprod.io themselves under Madrigal's own licence.
+vendor/
+*.dll
+*.so
+*.dylib
+
+# Godot
+/.godot/
+/.import/
+*.translation
+
+# Editors
+.vs/
+.vscode/
+.idea/
+.zed/

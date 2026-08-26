@@ -1,0 +1,43 @@
+name: build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: windows-latest, platform: windows }
+          - { os: ubuntu-latest, platform: linux }
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install SCons
+        run: python -m pip install scons
+
+      # No byProd SDK step on purpose: the binding resolves the runtime's symbols
+      # at load time, so nothing proprietary is needed to compile or to link.
+      - name: Build (debug)
+        run: scons target=template_debug platform=${{ matrix.platform }} -j2
+
+      - name: Build (release)
+        run: scons target=template_release platform=${{ matrix.platform }} -j2
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: libgdbyprod-${{ matrix.platform }}
+          path: addons/byprod/bin/

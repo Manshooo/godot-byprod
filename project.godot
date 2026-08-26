@@ -1,0 +1,14 @@
+; The repository root doubles as a Godot project so the demo scene sees the
+; addon at res://addons/byprod/ without a copy or a symlink.
+
+config_version=5
+
+[application]
+
+config/name="godot-byprod demo"
+run/main_scene="res://demo/demo.tscn"
+config/features=PackedStringArray("4.5", "Forward Plus")
+
+[rendering]
+
+renderer/rendering_method="forward_plus"
