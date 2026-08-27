@@ -1,8 +1,14 @@
 #include "bp_event_description.h"
 
+#include "bp_sound_manager.h"
+
 #include <godot_cpp/core/class_db.hpp>
 
 using namespace godot;
+
+// Out of line for the same reason as the group bus: the Ref member's destructor
+// needs the complete manager type.
+ByProdEventDescription::~ByProdEventDescription() = default;
 
 void ByProdEventDescription::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("create_instance"), &ByProdEventDescription::create_instance);
@@ -12,12 +18,13 @@ void ByProdEventDescription::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_valid"), &ByProdEventDescription::is_valid);
 }
 
-Ref<ByProdEventDescription> ByProdEventDescription::wrap(byprod::EventDescriptionHandle p_handle) {
+Ref<ByProdEventDescription> ByProdEventDescription::wrap(const Ref<ByProdSoundManager> &p_owner, byprod::EventDescriptionHandle p_handle) {
 	Ref<ByProdEventDescription> description;
 	if (p_handle == nullptr) {
 		return description;
 	}
 	description.instantiate();
+	description->owner = p_owner;
 	description->handle = p_handle;
 	return description;
 }
@@ -27,7 +34,7 @@ Ref<ByProdEventInstance> ByProdEventDescription::create_instance() {
 	if (api == nullptr || handle == nullptr) {
 		return Ref<ByProdEventInstance>();
 	}
-	return ByProdEventInstance::wrap(api->bpdEventDescriptionCreateInstance(handle));
+	return ByProdEventInstance::wrap(owner, api->bpdEventDescriptionCreateInstance(handle));
 }
 
 int ByProdEventDescription::get_parameter_index(const String &p_name) const {

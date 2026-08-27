@@ -1,8 +1,14 @@
 #include "bp_group_bus.h"
 
+#include "bp_sound_manager.h"
+
 #include <godot_cpp/core/class_db.hpp>
 
 using namespace godot;
+
+// Defined here rather than in the header: destroying the Ref member needs the
+// complete ByProdSoundManager, which the header only forward declares.
+ByProdGroupBus::~ByProdGroupBus() = default;
 
 void ByProdGroupBus::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_volume", "volume"), &ByProdGroupBus::set_volume);
@@ -12,12 +18,13 @@ void ByProdGroupBus::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volume"), "set_volume", "get_volume");
 }
 
-Ref<ByProdGroupBus> ByProdGroupBus::wrap(byprod::GroupBusHandle p_handle) {
+Ref<ByProdGroupBus> ByProdGroupBus::wrap(const Ref<ByProdSoundManager> &p_owner, byprod::GroupBusHandle p_handle) {
 	Ref<ByProdGroupBus> bus;
 	if (p_handle == nullptr) {
 		return bus;
 	}
 	bus.instantiate();
+	bus->owner = p_owner;
 	bus->handle = p_handle;
 	return bus;
 }

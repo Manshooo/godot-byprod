@@ -1,5 +1,7 @@
 #include "bp_event_instance.h"
 
+#include "bp_sound_manager.h"
+
 #include <godot_cpp/core/class_db.hpp>
 
 using namespace godot;
@@ -37,12 +39,13 @@ void ByProdEventInstance::_bind_methods() {
 	BIND_ENUM_CONSTANT(STATE_FINISHED);
 }
 
-Ref<ByProdEventInstance> ByProdEventInstance::wrap(byprod::EventInstanceHandle p_handle) {
+Ref<ByProdEventInstance> ByProdEventInstance::wrap(const Ref<ByProdSoundManager> &p_owner, byprod::EventInstanceHandle p_handle) {
 	Ref<ByProdEventInstance> instance;
 	if (p_handle == nullptr) {
 		return instance;
 	}
 	instance.instantiate();
+	instance->owner = p_owner;
 	instance->handle = p_handle;
 	return instance;
 }

@@ -11,6 +11,8 @@
 
 namespace godot {
 
+class ByProdSoundManager;
+
 class ByProdGroupBus : public RefCounted {
 	GDCLASS(ByProdGroupBus, RefCounted)
 
@@ -18,7 +20,10 @@ protected:
 	static void _bind_methods();
 
 public:
-	static Ref<ByProdGroupBus> wrap(byprod::GroupBusHandle p_handle);
+	static Ref<ByProdGroupBus> wrap(const Ref<ByProdSoundManager> &p_owner, byprod::GroupBusHandle p_handle);
+
+	ByProdGroupBus() = default;
+	~ByProdGroupBus();
 
 	void set_volume(float p_volume);
 	float get_volume() const;
@@ -26,6 +31,10 @@ public:
 	bool is_valid() const { return handle != nullptr; }
 
 private:
+	// The bus belongs to the loaded project, so the manager has to outlive it.
+	// Holding a reference is what enforces that: Godot frees objects in no
+	// particular order, and a call into a destroyed manager crashes the runtime.
+	Ref<ByProdSoundManager> owner;
 	byprod::GroupBusHandle handle = nullptr;
 };
 

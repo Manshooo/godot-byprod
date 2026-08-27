@@ -201,7 +201,8 @@ Ref<ByProdEventDescription> ByProdSoundManager::get_event_description(const Stri
 	if (api == nullptr || handle == nullptr) {
 		return Ref<ByProdEventDescription>();
 	}
-	return ByProdEventDescription::wrap(api->bpdSoundManagerGetEventDescription(handle, p_path.utf8().get_data()));
+	return ByProdEventDescription::wrap(Ref<ByProdSoundManager>(this),
+			api->bpdSoundManagerGetEventDescription(handle, p_path.utf8().get_data()));
 }
 
 void ByProdSoundManager::update() {
@@ -273,7 +274,7 @@ Ref<ByProdGroupBus> ByProdSoundManager::get_master_group_bus() {
 	if (api == nullptr || handle == nullptr) {
 		return Ref<ByProdGroupBus>();
 	}
-	return ByProdGroupBus::wrap(api->bpdSoundManagerGetMasterGroupBus(handle));
+	return ByProdGroupBus::wrap(Ref<ByProdSoundManager>(this), api->bpdSoundManagerGetMasterGroupBus(handle));
 }
 
 Ref<ByProdGroupBus> ByProdSoundManager::get_group_bus(const String &p_path) {
@@ -281,5 +282,6 @@ Ref<ByProdGroupBus> ByProdSoundManager::get_group_bus(const String &p_path) {
 	if (api == nullptr || handle == nullptr) {
 		return Ref<ByProdGroupBus>();
 	}
-	return ByProdGroupBus::wrap(api->bpdSoundManagerGetGroupBus(handle, p_path.utf8().get_data()));
+	return ByProdGroupBus::wrap(Ref<ByProdSoundManager>(this),
+			api->bpdSoundManagerGetGroupBus(handle, p_path.utf8().get_data()));
 }

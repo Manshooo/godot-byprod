@@ -21,6 +21,13 @@ The job scheduler, bulk audio and the debug statistics of the C API are not boun
 yet. They are additive — see `BYPROD_API_FUNCTIONS` in
 [`src/bp_api.h`](src/bp_api.h), where adding a function is one line.
 
+## Status
+
+Verified against the byProd 0.5.2 beta runtime on Windows and Linux (x86_64):
+the SDK's own sample project loads, its bank is fetched through the host, and
+`event:/Drums` plays with its parameters driven from GDScript. macOS is neither
+built nor tested.
+
 ## Requirements
 
 - Godot 4.5 or newer (built against godot-cpp `4.5`; GDExtension keeps this

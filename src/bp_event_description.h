@@ -14,6 +14,8 @@
 
 namespace godot {
 
+class ByProdSoundManager;
+
 class ByProdEventDescription : public RefCounted {
 	GDCLASS(ByProdEventDescription, RefCounted)
 
@@ -21,7 +23,10 @@ protected:
 	static void _bind_methods();
 
 public:
-	static Ref<ByProdEventDescription> wrap(byprod::EventDescriptionHandle p_handle);
+	static Ref<ByProdEventDescription> wrap(const Ref<ByProdSoundManager> &p_owner, byprod::EventDescriptionHandle p_handle);
+
+	ByProdEventDescription() = default;
+	~ByProdEventDescription();
 
 	Ref<ByProdEventInstance> create_instance();
 
@@ -33,6 +38,9 @@ public:
 	bool is_valid() const { return handle != nullptr; }
 
 private:
+	// Descriptions live and die with the loaded project, so the manager owning it
+	// is kept alive for as long as anything can still call through this one.
+	Ref<ByProdSoundManager> owner;
 	byprod::EventDescriptionHandle handle = nullptr;
 };
 

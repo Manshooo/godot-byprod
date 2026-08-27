@@ -14,6 +14,8 @@
 
 namespace godot {
 
+class ByProdSoundManager;
+
 class ByProdEventInstance : public RefCounted {
 	GDCLASS(ByProdEventInstance, RefCounted)
 
@@ -28,7 +30,7 @@ public:
 		STATE_FINISHED = byprod::EVENT_INSTANCE_FINISHED,
 	};
 
-	static Ref<ByProdEventInstance> wrap(byprod::EventInstanceHandle p_handle);
+	static Ref<ByProdEventInstance> wrap(const Ref<ByProdSoundManager> &p_owner, byprod::EventInstanceHandle p_handle);
 
 	ByProdEventInstance() = default;
 	~ByProdEventInstance();
@@ -59,6 +61,9 @@ public:
 	bool is_valid() const { return handle != nullptr; }
 
 private:
+	// Releasing an instance calls into the manager that created it, so the manager
+	// must not be freed first — which Godot gives no ordering guarantee about.
+	Ref<ByProdSoundManager> owner;
 	byprod::EventInstanceHandle handle = nullptr;
 };
 
