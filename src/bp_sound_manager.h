@@ -48,6 +48,16 @@ public:
 	// Takes the bytes of a project compiled by the byProd editor.
 	bool load_project(const PackedByteArray &p_bytes);
 
+	// Where <name>.bybank files are read from when the runtime asks for a bank.
+	// Without this a project loads but has no wave data, so nothing can sound.
+	// Read through Godot's FileAccess, so res:// paths work inside an exported PCK.
+	void set_bank_directory(const String &p_directory);
+	String get_bank_directory() const;
+
+	// Fetches a bank now instead of when the first event needing it plays. Must be
+	// called after load_project(): loading a project drops every bank it had.
+	bool preload_bank(const String &p_name);
+
 	Ref<ByProdEventDescription> get_event_description(const String &p_path);
 
 	// Must be called once per frame from the game thread.
@@ -73,7 +83,13 @@ public:
 private:
 	static Ref<ByProdSoundManager> create_with_flags(uint32_t p_flags, uint32_t p_sample_rate);
 
+	// Installed on the runtime with `this` as the user pointer; they run on
+	// whatever thread needed the bank, which is not necessarily the main one.
+	static int32_t bank_get_callback(const char *p_name, byprod::SoundBankData *r_data, void *p_user);
+	static void bank_release_callback(const char *p_name, const byprod::SoundBankData *p_data, void *p_user);
+
 	byprod::SoundManagerHandle handle = nullptr;
+	String bank_directory;
 };
 
 } // namespace godot

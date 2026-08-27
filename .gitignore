@@ -18,6 +18,12 @@ vendor/
 *.so
 *.dylib
 
+# Built byProd projects and their banks, including the SDK's own sample, which is
+# Madrigal's to distribute and not ours.
+demo/audio/
+*.byprod
+*.bybank
+
 # Godot
 /.godot/
 /.import/

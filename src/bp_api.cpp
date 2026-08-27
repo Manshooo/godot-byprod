@@ -2,6 +2,7 @@
 
 #include <godot_cpp/classes/project_settings.hpp>
 #include <godot_cpp/variant/string.hpp>
+#include <godot_cpp/variant/utility_functions.hpp>
 
 #include <string>
 
@@ -45,6 +46,25 @@ void close_library(void *p_handle) {
 #else
 	dlclose(p_handle);
 #endif
+}
+
+// byProd calls this from whatever thread hit the message, including its mixer
+// thread, so it does the least possible: hand the text to Godot's own logging.
+void print_hook(const char *p_message, int32_t p_type, void *p_user) {
+	(void)p_user;
+
+	const String message = String("[byProd] ") + String(p_message);
+	switch (p_type) {
+		case PRINT_TYPE_ERROR:
+			UtilityFunctions::push_error(message);
+			break;
+		case PRINT_TYPE_WARNING:
+			UtilityFunctions::push_warning(message);
+			break;
+		default:
+			UtilityFunctions::print(message);
+			break;
+	}
 }
 
 void *load_symbol(void *p_handle, const char *p_name) {
@@ -117,6 +137,19 @@ void load_api() {
 	// single scene, and unloading it under a live mixer thread is not worth the risk.
 	g_loaded = true;
 	g_error.clear();
+
+	g_api.bpdSetPrint(&print_hook, nullptr);
+
+	// The header asks hosts to compare the two before using anything else. A
+	// mismatch is not made fatal: the symbols all resolved, so the runtime is
+	// usable, but its behaviour is no longer what this binding was written for.
+	const uint32_t runtime_version = g_api.bpdVersion();
+	if (runtime_version != TARGET_VERSION) {
+		UtilityFunctions::push_warning(
+				vformat("byProd runtime is version %d.%d.%d, this binding targets %d.%d.%d.",
+						runtime_version >> 16, (runtime_version >> 8) & 0xFF, runtime_version & 0xFF,
+						TARGET_VERSION >> 16, (TARGET_VERSION >> 8) & 0xFF, TARGET_VERSION & 0xFF));
+	}
 }
 
 } // namespace

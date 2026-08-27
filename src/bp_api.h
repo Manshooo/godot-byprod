@@ -56,6 +56,40 @@ enum EventInstanceState : uint32_t {
 
 constexpr uint32_t INVALID_PARAMETER_INDEX = 0xFFFFFFFFu;
 
+enum PrintType : int32_t {
+	PRINT_TYPE_INFO = 0,
+	PRINT_TYPE_WARNING = 1,
+	PRINT_TYPE_ERROR = 2,
+};
+
+// The SDK this binding was written against, encoded the way bpdVersion() reports
+// it: (major << 16) | (minor << 8) | patch. The header tells hosts to compare the
+// two before using anything else.
+constexpr uint32_t TARGET_VERSION = (0u << 16) | (5u << 8) | 2u;
+
+// byProd's own diagnostics, forwarded to Godot's console. Installed once, when the
+// library is loaded — without it the runtime's explanation of a failed creation is
+// simply lost.
+using PrintFn = void (*)(const char *, int32_t, void *);
+
+// The runtime never opens a file: it asks the host for a bank by name and gives
+// the bytes back when the last thing using them is done.
+struct SoundBankData {
+	const void *bytes;
+	uint32_t length;
+
+	// Nonzero when the buffer will not outlive the call, so the runtime has to
+	// take its own copy. Zero means the host holds it until the matching release.
+	int32_t copy_data;
+};
+
+// Fills out and returns nonzero; zero means there is no such bank.
+using GetSoundBankDataFn = int32_t (*)(const char *, SoundBankData *, void *);
+
+// Called once per get, either when the runtime has finished with the bank or
+// straight after it copied one it was told not to keep.
+using ReleaseSoundBankDataFn = void (*)(const char *, const SoundBankData *, void *);
+
 // Mirrors SoundManagerSettings in ByProd.cs. Never fill this by hand: hand a
 // zeroed, over-sized buffer to bpdSoundManagerSettingsInit() and cast it (see
 // bp_sound_manager.cpp), so a future SDK that grows the struct writes into slack
@@ -77,11 +111,14 @@ static_assert(sizeof(SoundManagerSettings) == 24, "byProd settings layout drifte
 #define BYPROD_API_FUNCTIONS(X)                                                                                          \
 	X(uint32_t, bpdVersion, ())                                                                                          \
 	X(uint32_t, bpdHashString, (const char *))                                                                           \
+	X(void, bpdSetPrint, (PrintFn, void *))                                                                              \
 	X(void, bpdSoundManagerSettingsInit, (void *))                                                                       \
 	X(void *, bpdSoundManagerCreate, (void *))                                                                           \
 	X(void, bpdSoundManagerDestroy, (void *))                                                                            \
 	X(int32_t, bpdSoundManagerLoadProject, (void *, const uint8_t *, size_t))                                            \
 	X(void *, bpdSoundManagerGetEventDescription, (void *, const char *))                                                \
+	X(void, bpdSoundManagerSetSoundBankCallbacks, (void *, GetSoundBankDataFn, ReleaseSoundBankDataFn, void *))         \
+	X(int32_t, bpdSoundManagerPreloadSoundBank, (void *, const char *))                                                  \
 	X(void, bpdSoundManagerUpdate, (void *))                                                                             \
 	X(void, bpdSoundManagerMix, (void *, float *, uint32_t))                                                             \
 	X(void, bpdSoundManagerSetTickLevel, (void *, uint32_t))                                                             \

@@ -1,7 +1,10 @@
 #include "bp_sound_manager.h"
 
 #include <godot_cpp/classes/engine.hpp>
+#include <godot_cpp/classes/file_access.hpp>
 #include <godot_cpp/core/class_db.hpp>
+
+#include <cstring>
 
 #include <string>
 #include <vector>
@@ -28,6 +31,9 @@ void ByProdSoundManager::_bind_methods() {
 	ClassDB::bind_static_method("ByProdSoundManager", D_METHOD("get_runtime_version"), &ByProdSoundManager::get_runtime_version);
 
 	ClassDB::bind_method(D_METHOD("load_project", "bytes"), &ByProdSoundManager::load_project);
+	ClassDB::bind_method(D_METHOD("set_bank_directory", "directory"), &ByProdSoundManager::set_bank_directory);
+	ClassDB::bind_method(D_METHOD("get_bank_directory"), &ByProdSoundManager::get_bank_directory);
+	ClassDB::bind_method(D_METHOD("preload_bank", "name"), &ByProdSoundManager::preload_bank);
 	ClassDB::bind_method(D_METHOD("get_event_description", "path"), &ByProdSoundManager::get_event_description);
 	ClassDB::bind_method(D_METHOD("update"), &ByProdSoundManager::update);
 	ClassDB::bind_method(D_METHOD("mix", "frame_count"), &ByProdSoundManager::mix);
@@ -40,6 +46,7 @@ void ByProdSoundManager::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_valid"), &ByProdSoundManager::is_valid);
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "global_volume"), "set_global_volume", "get_global_volume");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "bank_directory", PROPERTY_HINT_DIR), "set_bank_directory", "get_bank_directory");
 
 	BIND_ENUM_CONSTANT(TICK_LEVEL_NONE);
 	BIND_ENUM_CONSTANT(TICK_LEVEL_PARTIAL);
@@ -81,6 +88,15 @@ Ref<ByProdSoundManager> ByProdSoundManager::create_with_flags(uint32_t p_flags, 
 
 	manager.instantiate();
 	manager->handle = created;
+
+	// Installed up front rather than from set_bank_directory(): the runtime only
+	// asks for banks it needs, and an unset directory answers "no such bank" —
+	// which is a readable byProd error instead of a silent project with no audio.
+	api->bpdSoundManagerSetSoundBankCallbacks(created,
+			&ByProdSoundManager::bank_get_callback,
+			&ByProdSoundManager::bank_release_callback,
+			manager.ptr());
+
 	g_last_error.clear();
 	return manager;
 }
@@ -128,6 +144,56 @@ bool ByProdSoundManager::load_project(const PackedByteArray &p_bytes) {
 		return false;
 	}
 	return api->bpdSoundManagerLoadProject(handle, p_bytes.ptr(), static_cast<size_t>(p_bytes.size())) != 0;
+}
+
+int32_t ByProdSoundManager::bank_get_callback(const char *p_name, byprod::SoundBankData *r_data, void *p_user) {
+	ByProdSoundManager *self = static_cast<ByProdSoundManager *>(p_user);
+	if (self == nullptr || self->bank_directory.is_empty()) {
+		return 0;
+	}
+
+	const String path = self->bank_directory.path_join(String(p_name) + ".bybank");
+	if (!FileAccess::file_exists(path)) {
+		return 0;
+	}
+
+	const PackedByteArray bytes = FileAccess::get_file_as_bytes(path);
+	if (bytes.is_empty()) {
+		return 0;
+	}
+
+	// Handed over without a copy (copy_data = 0), so the buffer has to outlive the
+	// call and is owned here until the matching release. A PackedByteArray cannot
+	// do that safely across threads, hence the raw array.
+	uint8_t *owned = new uint8_t[bytes.size()];
+	memcpy(owned, bytes.ptr(), bytes.size());
+
+	r_data->bytes = owned;
+	r_data->length = static_cast<uint32_t>(bytes.size());
+	r_data->copy_data = 0;
+	return 1;
+}
+
+void ByProdSoundManager::bank_release_callback(const char *p_name, const byprod::SoundBankData *p_data, void *p_user) {
+	(void)p_name;
+	(void)p_user;
+	delete[] static_cast<const uint8_t *>(p_data->bytes);
+}
+
+void ByProdSoundManager::set_bank_directory(const String &p_directory) {
+	bank_directory = p_directory;
+}
+
+String ByProdSoundManager::get_bank_directory() const {
+	return bank_directory;
+}
+
+bool ByProdSoundManager::preload_bank(const String &p_name) {
+	const byprod::Api *api = byprod::api();
+	if (api == nullptr || handle == nullptr) {
+		return false;
+	}
+	return api->bpdSoundManagerPreloadSoundBank(handle, p_name.utf8().get_data()) != 0;
 }
 
 Ref<ByProdEventDescription> ByProdSoundManager::get_event_description(const String &p_path) {

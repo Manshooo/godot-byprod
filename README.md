@@ -17,8 +17,8 @@ Five classes, usable from GDScript with no C# and no engine build:
 | `ByProdGroupBus` | a mix group (music, UI, SFX) and its volume |
 | `ByProdStreamPump` | optional: routes a host-mixed manager through Godot's audio buses |
 
-Sound banks, the job scheduler, bulk audio and the debug statistics of the C API
-are not bound yet. They are additive — see `BYPROD_API_FUNCTIONS` in
+The job scheduler, bulk audio and the debug statistics of the C API are not bound
+yet. They are additive — see `BYPROD_API_FUNCTIONS` in
 [`src/bp_api.h`](src/bp_api.h), where adding a function is one line.
 
 ## Requirements
@@ -65,15 +65,27 @@ if manager == null:
     push_error(ByProdSoundManager.get_last_error())
     return
 
-manager.load_project(FileAccess.get_file_as_bytes("res://audio/project.bpb"))
+# Wave data lives in .bybank files, which the runtime asks for by name rather
+# than opening itself. Point it at the folder holding them before loading, or
+# the project loads with nothing audible in it.
+manager.set_bank_directory("res://audio")
+manager.load_project(FileAccess.get_file_as_bytes("res://audio/project.byprod"))
 
-var description := manager.get_event_description("events/footstep")
+var description := manager.get_event_description("event:/footstep")
 var instance := description.create_instance()
 instance.set_parameter("surface", 1.0)
 instance.set_3d_attributes(global_position, Vector3.ZERO)
 instance.start()
 instance.release_when_finished()
 ```
+
+Banks are read through Godot's `FileAccess`, so `res://` paths keep working inside
+an exported PCK, where the runtime's own file I/O could not reach them. Use
+`preload_bank("main")` after loading a project to fetch one up front instead of
+waiting for the first event that needs it.
+
+byProd's own diagnostics are forwarded to Godot's console (`[byProd] …`), and the
+binding warns when the runtime's version is not the one it was written against.
 
 Call `manager.update()` once per frame, and feed the listener from your camera:
 
