@@ -106,6 +106,34 @@ func _process(_delta: float) -> void:
 The manager is created right-handed, matching Godot's 3D space — byProd itself
 defaults to a left-handed one, which would mirror every panned sound.
 
+### Pausing
+
+`set_tick_level()` says how much of the world is running, and instances opt into
+following it one by one. An instance pauses once the level drops to the one it
+was given or below, and resumes when the level rises again — so `TICK_LEVEL_NONE`
+is "only on a full pause" and `TICK_LEVEL_PARTIAL` is "as soon as the world is
+only half simulated", which is the difference between music that plays under an
+open inventory and ambience that does not:
+
+```gdscript
+music.set_auto_pause(true)                                       # pauses at NONE
+ambience.set_auto_pause(true, ByProdSoundManager.TICK_LEVEL_PARTIAL)
+
+manager.set_tick_level(ByProdSoundManager.TICK_LEVEL_PARTIAL)    # inventory open
+manager.set_tick_level(ByProdSoundManager.TICK_LEVEL_NONE)       # paused
+manager.set_tick_level(ByProdSoundManager.TICK_LEVEL_FULL)       # back to play
+```
+
+Opting in is off by default, so a tick level nothing subscribed to moves nothing.
+Call `set_auto_pause()` before `release_when_finished()`, which hands the instance
+to the runtime and leaves nothing to call it on — doing it in that order is how a
+fire-and-forget one-shot obeys a pause at all, since the game no longer holds a
+handle to pause by hand.
+
+Muting on focus loss is a different thing and belongs to the game: drop
+`set_global_volume()` or a group bus to zero. Tick level stops the transport, so
+using it there would freeze timelines rather than silence them.
+
 ### Going through Godot's audio buses
 
 By default byProd opens its own audio device and mixes on its own thread, and
