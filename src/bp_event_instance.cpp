@@ -28,6 +28,10 @@ void ByProdEventInstance::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_volume_multiplier", "volume"), &ByProdEventInstance::set_volume_multiplier);
 	ClassDB::bind_method(D_METHOD("get_volume_multiplier"), &ByProdEventInstance::get_volume_multiplier);
 
+	ClassDB::bind_method(D_METHOD("set_auto_pause", "enabled", "level"),
+			&ByProdEventInstance::set_auto_pause,
+			DEFVAL(ByProdSoundManager::TICK_LEVEL_NONE));
+
 	ClassDB::bind_method(D_METHOD("set_3d_attributes", "position", "velocity"), &ByProdEventInstance::set_3d_attributes);
 	ClassDB::bind_method(D_METHOD("is_valid"), &ByProdEventInstance::is_valid);
 
@@ -188,6 +192,14 @@ float ByProdEventInstance::get_volume_multiplier() const {
 		return 1.0f;
 	}
 	return api->bpdEventInstanceGetVolumeMultiplier(handle);
+}
+
+void ByProdEventInstance::set_auto_pause(bool p_enabled, int p_level) {
+	const byprod::Api *api = byprod::api();
+	if (api == nullptr || handle == nullptr) {
+		return;
+	}
+	api->bpdEventInstanceSetAutoPause(handle, p_enabled ? 1 : 0, static_cast<uint32_t>(p_level));
 }
 
 void ByProdEventInstance::set_3d_attributes(const Vector3 &p_position, const Vector3 &p_velocity) {

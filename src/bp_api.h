@@ -105,9 +105,9 @@ struct SoundManagerSettings {
 
 static_assert(sizeof(SoundManagerSettings) == 24, "byProd settings layout drifted from the C# binding");
 
-// The subset of the C API this wrapper needs. Sound banks, the job scheduler,
-// bulk audio and the debug statistics are deliberately left out of the first
-// pass — they are additive and can be appended here without touching callers.
+// The subset of the C API this wrapper needs. The job scheduler, bulk audio and
+// the debug statistics are deliberately left out — they are additive and can be
+// appended here without touching callers.
 #define BYPROD_API_FUNCTIONS(X)                                                                                          \
 	X(uint32_t, bpdVersion, ())                                                                                          \
 	X(uint32_t, bpdHashString, (const char *))                                                                           \
@@ -149,6 +149,7 @@ static_assert(sizeof(SoundManagerSettings) == 24, "byProd settings layout drifte
 	X(void, bpdEventInstanceSendSignal, (void *, const char *))                                                          \
 	X(void, bpdEventInstanceSetVolumeMultiplier, (void *, float))                                                        \
 	X(float, bpdEventInstanceGetVolumeMultiplier, (void *))                                                              \
+	X(void, bpdEventInstanceSetAutoPause, (void *, int32_t, uint32_t))                                                   \
 	X(void, bpdEventInstanceSet3DAttributes, (void *, float, float, float, float, float, float))
 
 struct Api {

@@ -56,6 +56,12 @@ public:
 	void set_volume_multiplier(float p_volume);
 	float get_volume_multiplier() const;
 
+	// Subscribes the instance to the manager's tick level: it pauses at p_level and
+	// below, and resumes above it. Off by default, so ByProdSoundManager's
+	// set_tick_level() moves nothing until instances opt in here. Must be called
+	// before release_when_finished(), which drops the handle this needs.
+	void set_auto_pause(bool p_enabled, int p_level);
+
 	void set_3d_attributes(const Vector3 &p_position, const Vector3 &p_velocity);
 
 	bool is_valid() const { return handle != nullptr; }
