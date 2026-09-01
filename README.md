@@ -23,16 +23,19 @@ yet. They are additive — see `BYPROD_API_FUNCTIONS` in
 
 ## Status
 
-Verified against the byProd 0.5.2 beta runtime on Windows and Linux (x86_64):
-the SDK's own sample project loads, its bank is fetched through the host, and
-`event:/Drums` plays with its parameters driven from GDScript. macOS is neither
-built nor tested.
+Verified against the byProd 0.5.3 beta runtime on Windows (x86_64): the SDK's
+own sample project loads, its bank is fetched through the host, and
+`event:/Drums` plays with its parameters driven from GDScript. The same was
+checked on Linux against 0.5.2, and 0.5.3 resolves every symbol this binding
+asks for. macOS is neither built nor tested.
 
 ## Requirements
 
 - Godot 4.5 or newer (built against godot-cpp `4.5`; GDExtension keeps this
   loadable in later 4.x)
-- the byProd SDK — tested against **0.5.2 beta**
+- the byProd SDK — tested against **0.5.3 beta**. byprod.io serves only the
+  current release and removes the previous one, so pinning an older version in a
+  download URL buys nothing: 0.5.2 started answering 404 the day 0.5.3 shipped
 - SCons and a C++17 toolchain
 
 ## Building
