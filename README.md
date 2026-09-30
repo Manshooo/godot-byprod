@@ -29,11 +29,16 @@ own sample project loads, its bank is fetched through the host, and
 checked on Linux against 0.5.2, and 0.5.3 resolves every symbol this binding
 asks for. macOS is neither built nor tested.
 
+The binding targets 0.5.5, the current release. That target is taken from the
+changelog, not from a rerun: 0.5.4 and 0.5.5 list editor and mixer changes and
+nothing on the C API, so the symbol set this binding resolves is expected to
+carry over unchanged. The runtime check above has not been repeated on 0.5.5 yet.
+
 ## Requirements
 
 - Godot 4.5 or newer (built against godot-cpp `4.5`; GDExtension keeps this
   loadable in later 4.x)
-- the byProd SDK — tested against **0.5.3 beta**. byprod.io serves only the
+- the byProd SDK — targets **0.5.5 beta**, tested against 0.5.3. byprod.io serves only the
   current release and removes the previous one, so pinning an older version in a
   download URL buys nothing: 0.5.2 started answering 404 the day 0.5.3 shipped
 - SCons and a C++17 toolchain
