@@ -41,9 +41,7 @@ under Debugger → Errors, not in Output.
 
 - Godot 4.5 or newer (built against godot-cpp `4.5`; GDExtension keeps this
   loadable in later 4.x)
-- the byProd SDK — tested against **0.5.5 beta**. byprod.io serves only the
-  current release and removes the previous one, so pinning an older version in a
-  download URL buys nothing: 0.5.2 started answering 404 the day 0.5.3 shipped
+- the byProd SDK — tested against **0.5.5 beta**.
 - SCons and a C++17 toolchain
 
 ## Building
