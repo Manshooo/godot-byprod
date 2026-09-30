@@ -65,7 +65,7 @@ enum PrintType : int32_t {
 // The SDK this binding was written against, encoded the way bpdVersion() reports
 // it: (major << 16) | (minor << 8) | patch. The header tells hosts to compare the
 // two before using anything else.
-constexpr uint32_t TARGET_VERSION = (0u << 16) | (5u << 8) | 3u;
+constexpr uint32_t TARGET_VERSION = (0u << 16) | (5u << 8) | 5u;
 
 // byProd's own diagnostics, forwarded to Godot's console. Installed once, when the
 // library is loaded — without it the runtime's explanation of a failed creation is
