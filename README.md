@@ -34,6 +34,14 @@ changelog, not from a rerun: 0.5.4 and 0.5.5 list editor and mixer changes and
 nothing on the C API, so the symbol set this binding resolves is expected to
 carry over unchanged. The runtime check above has not been repeated on 0.5.5 yet.
 
+What the changelog does not say: 0.5.5 moved the compiled project format to data
+version 15 and refuses anything older — `Incompatible project data version.
+Expected 15, found 14`, then `load_project()` returns `false`. The C API is
+unchanged, but every `.byprod` built by an earlier editor has to be rebuilt with
+the 0.5.5 one (`ByProdEditor.exe build <project> [output]`) along with its banks.
+The reason only reaches Godot through `push_error`, so while the game runs it is
+under Debugger → Errors, not in Output.
+
 ## Requirements
 
 - Godot 4.5 or newer (built against godot-cpp `4.5`; GDExtension keeps this
