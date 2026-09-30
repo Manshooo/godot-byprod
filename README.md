@@ -23,22 +23,25 @@ yet. They are additive — see `BYPROD_API_FUNCTIONS` in
 
 ## Status
 
-Verified against the byProd 0.5.3 beta runtime on Windows (x86_64): the SDK's
-own sample project loads, its bank is fetched through the host, and
-`event:/Drums` plays with its parameters driven from GDScript. The same was
-checked on Linux against 0.5.2, and 0.5.3 resolves every symbol this binding
-asks for. macOS is neither built nor tested.
+Verified against the byProd 0.5.5 beta runtime on Windows (x86_64): the runtime
+reports itself as 0.5.5 with no version warning, a project built by the 0.5.5
+editor loads, its bank is fetched through the host, and one of its events plays.
+Linux was last run against 0.5.2 and has not been rerun since. macOS is neither
+built nor tested.
 
-The binding targets 0.5.5, the current release. That target is taken from the
-changelog, not from a rerun: 0.5.4 and 0.5.5 list editor and mixer changes and
-nothing on the C API, so the symbol set this binding resolves is expected to
-carry over unchanged. The runtime check above has not been repeated on 0.5.5 yet.
+What the changelog does not say: 0.5.5 moved the compiled project format to data
+version 15 and refuses anything older — `Incompatible project data version.
+Expected 15, found 14`, then `load_project()` returns `false`. The C API is
+unchanged, but every `.byprod` built by an earlier editor has to be rebuilt with
+the 0.5.5 one (`ByProdEditor.exe build <project> [output]`) along with its banks.
+The reason only reaches Godot through `push_error`, so while the game runs it is
+under Debugger → Errors, not in Output.
 
 ## Requirements
 
 - Godot 4.5 or newer (built against godot-cpp `4.5`; GDExtension keeps this
   loadable in later 4.x)
-- the byProd SDK — targets **0.5.5 beta**, tested against 0.5.3. byprod.io serves only the
+- the byProd SDK — tested against **0.5.5 beta**. byprod.io serves only the
   current release and removes the previous one, so pinning an older version in a
   download URL buys nothing: 0.5.2 started answering 404 the day 0.5.3 shipped
 - SCons and a C++17 toolchain
