@@ -11,7 +11,7 @@ extends Node
 @export_file("*.byprod") var project_path: String = "res://demo/audio/sample_project.byprod"
 
 ## Event to play once at startup, if the project above is present.
-@export var event_path: String = "event:/Drums"
+@export var event_path: String = "event:/ui/skill_unlock"
 
 var _manager: ByProdSoundManager
 var _instance: ByProdEventInstance
